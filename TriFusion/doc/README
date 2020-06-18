@@ -1,0 +1,49 @@
+Instructions pour compiler et exécuter le code et utiliser le makefile : 
+    Compiler : make 
+    Exécuter : ./exe 
+    Nettoyer : make clean 
+    Créer doc : make doc 
+    Créer archive : make give 
+
+Fonctionnement du code : 
+    main.c: 
+        int main(int argc, char const *argv[]) : Créer un tableau à trier, afficher le tableau, 
+        appeller la fonction triFusion dans une région parallèle et executé sur un seul thread, afficher le tableau trié et le temps d'exécution. 
+            printf(texte) : Ecrire un message dans la console. 
+            omp_get_wtime() : Déterminer le temps d'exécution, un appel au début et un appel à la fin du programme. 
+            omp_set_num_threads(2) : Définir le nombre de threads. 
+            #pragma omp parallel : Définir une région du programme qui doit être éxecuté en parallèle. 
+            #pragma omp single nowait : Exécuter le bloc par un seul thread et remplacer la barrière implicite. 
+    triFusion.c : 
+        void affichageTableau(int tab[], int taille) : Afficher un tableau. 
+            printf(texte) : Ecrire un message dans la console. 
+        int triFusion(int tab[], int debut, int fin) : Appeler de manière récursive pour diviser le tableau en deux un nombre maximum de fois 
+        et appeler la fonction fusion. 
+            #pragma omp task shared(triGauche) : Déclarer une tache fille qui exécute le bloc. 
+            #pragma omp taskwait : Attendre que les tâches filles soient terminées avant de continuer. 
+        void fusion(int tab[], int debutTabDroit, int finTabDroit, int finTabGauche) : Fusionner en triant les tableaux. 
+            malloc(taille) : allouer la mémoire. 
+            free(tab) : libérer la mémoire. 
+
+Décision de design : 
+    Pour cet exercice, j'ai décidé de reprendre le concept vu en cours dans l'exercice 
+    faisant un calcul parallèle avec OpenMP de l'algoritme de fibonacci en récursif 
+    En l'appliquand à l'algorithme du tri fusion en récursif. 
+
+Résultat obtenu : 
+    Tableau non trié : 
+    4 8 5 3 6 9 1 7 2 
+    Thread : 0 
+    Thread : 1 
+    Tableau trié : 
+    1 2 3 4 5 6 7 8 9 
+    Temps d'exécution : 0.034038 s
+
+Section de références : 
+    https://arel.eisti.fr/documents/67236/download/03-PP-OpenMP-3.pdf 
+    https://arel.eisti.fr/documents/67237/download/TP3-PP.pdf 
+    https://arel.eisti.fr/documents/62316 
+    http://icps.u-strasbg.fr/~bastoul/teaching/openmp/bastoul_cours_openmp.pdf 
+    https://www.lri.fr/~falcou/teaching/par/OpenMP-cours.pdf 
+    https://www.labunix.uqam.ca/~tremblay/INF5171/Diapositives/11-open-mp-ac.pdf 
+    https://docs.microsoft.com/fr-fr/cpp/parallel/openmp/openmp-c-and-cpp-application-program-interface?view=vs-2019

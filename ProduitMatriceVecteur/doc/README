@@ -1,0 +1,56 @@
+Instructions pour compiler et exécuter le code et utiliser le makefile : 
+    Compiler : make 
+    Exécuter : mpirun -np 2 ./exe 
+    Nettoyer : make clean 
+    Créer doc : make doc 
+    Créer archive : make give 
+
+Fonctionnement du code : 
+    main.c: 
+        int main(int argc, char const *argv[]) : Pour commencer on initialise l'environnement MPI, on récupère le nombre de processus et le rang du processus en cours, 
+        on vérifie que le reste de la division euclidienne du nombre de colonne de la matrice A est bien divisible par le nombre de processus lancé par l'utilisateur, 
+        si oui on divise le nombre de colonne par le nombre de processus pour obtenir le nombre d'éléments pour chaque sous vecteur, 
+        sinon on affiche un message d'erreur et on termine l'exécution de l'environnement, après on alloue la mémoire du vecteur pour le résultat du produit matriciel. 
+        Ensuite, si le processus en cours a pour valeur 0 on initialise la matrice et le vecteur avec des entiers sinon on alloue la mémoire des sous vecteurs de taille calculée plus tôt. 
+        Pour continuer, le processus 0 partage la matrice aux autres processus puis divise le vecteur en sous vecteur pour partager chaque sous vecteur à un processus. 
+        Chaque sous-vecteur calcule sa partie du produit matricielle puis les calculs sont additionnés qu'on place dans un vecteur. Si on se trouve dans le processus 0 on affiche la résultat. 
+        Pour finir, on libère la mémoire allouée pour les différents vecteur et désactiver l'environnement MPI.
+            MPI_Init(&argc,&argv) : Initialiser l'environnement MPI. 
+            MPI_Comm_size(MPI_COMM_WORLD, &nombreProcessus) : Retourner le nombre de processus. 
+            MPI_Comm_rank(MPI_COMM_WORLD, &rang) : Retourner le rang du processus en cours. 
+            printf(texte) : Ecrire un message dans la console. 
+            fprintf(stderr, nombreColonneA = %d doit être divisible par nombreProcessus = %dn, nombreColonneA, nombreProcessus) : Ecrire dans un fichier erreur et afficher dans la console. 
+            MPI_Abort(MPI_COMM_WORLD, 1) : Terminer l'environnement MPI avec un code retour d'erreur. 
+            malloc(nombreColonneA * sizeof(int)) : Allouer la mémoire d'un tableau. 
+            MPI_Bcast(A, nombreLigneA * nombreColonneA, MPI_INT, 0, MPI_COMM_WORLD) : Partager à tous les processus le pointeur d'entier A à partir du processus 0. 
+            MPI_Scatter(B, nombreElement, MPI_INT, B, nombreElement, MPI_INT, 0, MPI_COMM_WORLD) : Diviser le vecteur d'entier B en de nombreux sous-vecteur d'entier de taille nombreElement qui seront distribués entre tous les processus. 
+            MPI_Reduce_scatter(resultatTmp, C, &nombreLigneA, MPI_INT, MPI_SUM, MPI_COMM_WORLD) : Additioner les différents vecteur d'entier resultatTmp et insérer la somme dans le vecteur C. 
+            free(C) : Libérer la mémoire allouée. 
+            MPI_Finalize() : Finaliser l'environnement MPI. 
+
+Décision de design : 
+    Pour cet exercice, j'ai décidé d'utiliser la fonction MPI_Reduce_scatter car elle était imposé dans l'énonncé, 
+    j'ai donc construit mon code dans l'objectif de pouvoir utiliser cette fonction. 
+
+Résultat obtenu : 
+    Nombre Processus : 2, Rang : 1 
+    Nombre Processus : 2, Rang : 0 
+    A = 
+        1     2 
+        3     4
+        5     6 
+    B = 
+        1 
+        2 
+    C = 
+        5 
+        11 
+        17
+
+Section de références : 
+    https://arel.eisti.fr/documents/67238 
+    https://arel.eisti.fr/documents/67321 
+    http://www.idris.fr/media/formations/mpi/idrismpitp.pdf 
+    https://www.rookiehpc.com/mpi/docs/mpi_reduce_scatter.php
+    https://linux.die.net/man/3/mpi_reduce_scatter 
+    https://www.open-mpi.org/doc/v4.0/
